@@ -3,6 +3,8 @@ package com.example.locationtestproject;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -25,8 +27,12 @@ import androidx.core.content.ContextCompat;
 import androidx.core.location.LocationManagerCompat;
 
 import com.google.android.gms.nearby.Nearby;
+import com.google.android.gms.nearby.messages.Distance;
 import com.google.android.gms.nearby.messages.Message;
 import com.google.android.gms.nearby.messages.MessageListener;
+import com.google.android.gms.nearby.messages.Strategy;
+
+import java.io.ByteArrayOutputStream;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -44,12 +50,13 @@ public class MainActivity extends AppCompatActivity {
     private Location lastLoc;
     private Location nearestLoc;
 
-    final float THRESHOLD = (float) 15;  //Meters at which alarm should begin playing (roughly 12m margin of error)
-    final int FREQUENT_UDPATES = 1000;
-    final int BATTERY_SAVER = 5000;
+    final float THRESHOLD = (float) 2;  //Meters at which alarm should begin playing (roughly 12m margin of error)
+    final int FREQUENT_UDPATES = 5000;
+    final int BATTERY_SAVER = 10000;
     Intent i;
     boolean broadcasting = false;
     boolean boolCautious = true;
+    Strategy.Builder s = new Strategy.Builder().setDistanceType(Strategy.DISTANCE_TYPE_EARSHOT);
 
     //Lifecycle methods
     @Override
@@ -142,6 +149,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void broadcastMessage() {
         if (broadcasting)
+            Toast.makeText(this, "" , Toast.LENGTH_SHORT).show();
             Nearby.getMessagesClient(this).publish(message);
     }
 
@@ -184,6 +192,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFound(Message m) {
                 Log.d(TAG, "Found message: " + new String(m.getContent()));
+                Toast.makeText(getApplicationContext(), "Found MSG", Toast.LENGTH_SHORT).show();
                 updateNearestLoc(m);
                 updateAlerts();
             }
@@ -217,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
         if (lastLoc != null)
             message = new Message(constructLocString(lastLoc).getBytes());
         Log.d(TAG, "Initial Location: " + new String(message.getContent()));
-
+        //Toast.makeText(this, new String(message.getContent()), Toast.LENGTH_SHORT).show();
         broadcastMessage();
 
 
@@ -227,6 +236,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "onLocationChanged: Publishing location");
                 lastLoc = location;
                 message = new Message(constructLocString(location).getBytes());
+               // Toast.makeText(getApplicationContext(), constructLocString(location), Toast.LENGTH_SHORT).show();
                 broadcastMessage();
             }
 
